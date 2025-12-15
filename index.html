@@ -3,39 +3,160 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Movie Night for You</title>
+  <title>Christmas Movie Night</title>
+
   <style>
-    body { font-family: system-ui, Segoe UI, Arial, sans-serif; margin: 0; background: #0b0b0f; color: #f5f5f7; }
-    .wrap { max-width: 820px; margin: 0 auto; padding: 28px 18px 60px; }
-    .card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 22px; }
-    h1 { font-size: 34px; margin: 0 0 8px; }
-    .sub { opacity: .85; margin: 0 0 18px; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
-    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
-    .pill { display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); margin: 6px 6px 0 0; }
-    button { cursor: pointer; border: 0; border-radius: 12px; padding: 12px 14px; font-weight: 650; }
-    .btn { background: #ff3b7a; color: #fff; }
-    .btn2 { background: rgba(255,255,255,.10); color: #fff; border: 1px solid rgba(255,255,255,.16); }
-    .row { display:flex; gap:10px; flex-wrap: wrap; margin-top: 14px; }
-    .small { opacity:.8; font-size: 13px; margin-top: 10px; }
-    .hidden { display:none; }
-    input { width: 100%; padding: 12px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; }
-    .lockbox { margin-top: 16px; }
-    .ok { color: #7CFC9A; font-weight: 650; }
-    .err { color: #ff8a8a; font-weight: 650; }
+    body {
+      font-family: system-ui, Segoe UI, Arial, sans-serif;
+      margin: 0;
+      color: #f5f5f7;
+    }
+
+    .bgvid {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: -1;
+    }
+
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 18px 64px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+
+    h1 {
+      font-size: 36px;
+      margin: 0 0 10px;
+    }
+
+    h2 {
+      margin: 22px 0 10px;
+    }
+
+    .sub {
+      opacity: 0.9;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 720px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    button {
+      cursor: pointer;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 650;
+      border: none;
+    }
+
+    .btn {
+      background: #b11226;
+      color: #fff;
+    }
+
+    .btn2 {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .small {
+      opacity: 0.8;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .ok {
+      color: #9bffb2;
+      font-weight: 650;
+    }
+
+    .err {
+      color: #ff9a9a;
+      font-weight: 650;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid rgba(255,255,255,0.25);
+      margin: 20px 0;
+    }
   </style>
 </head>
 
 <body>
+
+  <video class="bgvid" autoplay muted loop playsinline>
+    <source src="fireplace.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
+
   <div class="wrap">
     <div class="card">
-      <h1>Movie Night</h1>
-      <p class="sub">Hi love, this night is for you. Cozy mode starts now.</p>
+      <h1>Christmas Movie Night</h1>
+      <p class="sub">A cozy night by the fire, just for you.</p>
 
-      <!-- Simple "unlock" gate (not secure, just a fun surprise layer) -->
       <div class="lockbox">
-        <p style="margin:0 0 10px;">Enter the secret code from your gift box:</p>
-        <input id="code" placeholder="Type the code here" autocomplete="off" />
+        <p>Enter the secret code from your gift:</p>
+        <input id="code" placeholder="Type the code here" autocomplete="off">
         <div class="row">
           <button class="btn" onclick="unlock()">Unlock</button>
           <button class="btn2" onclick="hint()">Need a hint</button>
@@ -44,57 +165,58 @@
       </div>
 
       <div id="content" class="hidden">
-        <hr style="border:0;border-top:1px solid rgba(255,255,255,.14); margin:18px 0;">
-        <h2 style="margin:0 0 8px;">Tonight’s plan</h2>
+        <hr>
+
+        <h2>Tonight’s plan</h2>
         <div class="grid">
-          <div class="card" style="padding:16px;">
+          <div class="card">
             <div class="pill">Step 1</div>
-            <p style="margin:10px 0 0;">Pick the movie. You are the boss.</p>
+            <p>You pick the movie. No debating.</p>
           </div>
-          <div class="card" style="padding:16px;">
+          <div class="card">
             <div class="pill">Step 2</div>
-            <p style="margin:10px 0 0;">Blanket, cozy clothes, no chores, no stress.</p>
+            <p>Blankets, cozy clothes, fireplace ambiance.</p>
           </div>
-          <div class="card" style="padding:16px;">
+          <div class="card">
             <div class="pill">Step 3</div>
-            <p style="margin:10px 0 0;">Popcorn and snacks, I will handle refills.</p>
+            <p>Popcorn, snacks, and refills handled by me.</p>
           </div>
-          <div class="card" style="padding:16px;">
+          <div class="card">
             <div class="pill">Step 4</div>
-            <p style="margin:10px 0 0;">Wine in the fancy glasses, cheers to us.</p>
+            <p>Wine in the nice glasses. Cheers to us.</p>
           </div>
         </div>
 
-        <h2 style="margin:18px 0 8px;">A note for you</h2>
-        <div class="card" style="padding:16px;">
-          <p style="margin:0;">
-            I love you. Thank you for everything you do, and for making our home feel like home.
-            Tonight is simple: relax, laugh, and let me spoil you a little.
+        <h2>A note for you</h2>
+        <div class="card">
+          <p>
+            I love you. Thank you for everything you do and for making our home feel warm,
+            safe, and full of love. Tonight is about relaxing and enjoying time together.
           </p>
-          <p style="margin:12px 0 0; opacity:.85;">Love, Edgar</p>
+          <p style="margin-top:12px; opacity:0.9;">Love, Edgar</p>
         </div>
 
         <div class="row">
-          <button class="btn" onclick="confetti()">Start the night</button>
+          <button class="btn" onclick="startNight()">Start movie night</button>
           <button class="btn2" onclick="window.print()">Print this page</button>
         </div>
 
-        <p class="small">Tip: you can edit this page anytime and it will update automatically.</p>
+        <p class="small">Merry Christmas ❤️</p>
       </div>
     </div>
   </div>
 
   <script>
-    // Change this code to whatever you want printed in the box.
     const SECRET = "MERRYCHRISTMAS";
 
     function unlock() {
       const val = (document.getElementById("code").value || "").trim().toUpperCase();
       const status = document.getElementById("status");
+
       if (val === SECRET) {
         document.getElementById("content").classList.remove("hidden");
-        status.innerHTML = '<span class="ok">Unlocked. Welcome to movie night.</span>';
         document.querySelector(".lockbox").style.display = "none";
+        status.innerHTML = '<span class="ok">Unlocked. Welcome to movie night.</span>';
       } else {
         status.innerHTML = '<span class="err">Not quite. Try again.</span>';
       }
@@ -102,12 +224,13 @@
 
     function hint() {
       document.getElementById("status").textContent =
-        "Hint: It is two words, all caps, no spaces. It is the classic holiday phrase.";
+        "Hint: two words, all caps, no spaces. A classic holiday phrase.";
     }
 
-    function confetti() {
+    function startNight() {
       alert("Movie night begins. I love you.");
     }
   </script>
+
 </body>
 </html>
