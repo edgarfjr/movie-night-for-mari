@@ -130,14 +130,12 @@
       margin: 20px 0;
     }
 
-    /* Top right controls */
     .topbar {
       display: flex;
       justify-content: flex-end;
       margin-bottom: 12px;
     }
 
-    /* Fade-in message modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -183,12 +181,8 @@
       line-height: 1.35;
     }
 
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-    @keyframes popIn {
-      to { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes popIn { to { transform: translateY(0); opacity: 1; } }
   </style>
 </head>
 
@@ -198,12 +192,10 @@
   </video>
   <div class="overlay"></div>
 
-  <!-- This audio file must exist in your repo root -->
   <audio id="bgm" preload="auto" loop>
     <source src="song.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Fade-in message modal -->
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" onclick="closeModal()"></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-label="Movie night message">
@@ -281,7 +273,7 @@
   </div>
 
   <script>
-    const SECRET = "NAVIDADCONTLCAMOR";
+    const SECRET = "NAVIDADCONMIAMOR";
 
     const bgm = document.getElementById("bgm");
     const musicBtn = document.getElementById("musicBtn");
@@ -307,11 +299,9 @@
     }
 
     function startNight() {
-      // Show the soft fade-in message instead of an alert
       openModal();
 
-      // Optional: start music automatically when she clicks Start (allowed by browsers)
-      // Comment these two lines out if you want music to be manual only.
+      // Always toggle music ON when she clicks Start Movie Night
       if (!musicOn) {
         toggleMusic();
       }
@@ -328,15 +318,12 @@
     }
 
     function toggleMusic() {
-      // Browsers require user interaction before audio can play.
-      // This function is always triggered by a click, so it will work.
       if (!musicOn) {
-        bgm.volume = 0.45; // feel free to adjust 0.0 to 1.0
+        bgm.volume = 0.45;
         bgm.play().then(() => {
           musicOn = true;
           musicBtn.textContent = "Music: On";
         }).catch(() => {
-          // If the file is missing or blocked, keep it graceful.
           musicOn = false;
           musicBtn.textContent = "Music: Off";
         });
@@ -347,7 +334,6 @@
       }
     }
 
-    // Nice touch: allow ESC to close modal
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeModal();
     });
