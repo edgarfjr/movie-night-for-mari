@@ -28,23 +28,12 @@
       z-index: -1;
     }
 
-    /* Invisible easter egg click zone */
-    .easter-area {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 28vh;
-      z-index: 0;
-      cursor: default;
-    }
-
     .wrap {
       max-width: 920px;
       margin: 0 auto;
       padding: 32px 18px 64px;
       position: relative;
-      z-index: 1;
+      z-index: 2;
     }
 
     .card {
@@ -116,7 +105,7 @@
       border: 1px solid rgba(255,255,255,0.25);
     }
 
-    input {
+    input[type="text"], input[type="password"], input {
       width: 100%;
       padding: 12px;
       border-radius: 12px;
@@ -124,6 +113,7 @@
       background: rgba(255,255,255,0.08);
       color: #fff;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     .small {
@@ -159,7 +149,7 @@
       align-items: center;
       justify-content: center;
       padding: 18px;
-      z-index: 60;
+      z-index: 80;
     }
 
     .modal.show { display: flex; }
@@ -218,17 +208,38 @@
       border-radius: 16px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.14);
-      cursor: pointer;
       user-select: none;
     }
-    .check-item input {
+    .check-item .box {
       width: 18px;
       height: 18px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.08);
       margin-top: 2px;
+      flex: 0 0 auto;
+      position: relative;
+      cursor: pointer;
+    }
+    .check-item.done .box {
+      background: rgba(255,255,255,0.85);
+      border-color: rgba(255,255,255,0.85);
+    }
+    .check-item.done .box:after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 7px;
+      height: 12px;
+      border: solid rgba(0,0,0,0.75);
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
     }
     .check-item .label {
       line-height: 1.3;
       opacity: 0.95;
+      cursor: pointer;
     }
     .check-item.done .label {
       opacity: 0.75;
@@ -254,10 +265,7 @@
       background: rgba(0,0,0,0.35);
     }
 
-    /* Portrait photos: show full image (no cropping) */
-    .gallery-img.portrait {
-      object-fit: contain;
-    }
+    .gallery-img.portrait { object-fit: contain; }
 
     @media (max-width: 720px) {
       .gallery-img { height: 340px; }
@@ -292,9 +300,7 @@
       cursor: pointer;
     }
 
-    .dot.active {
-      background: rgba(255,255,255,0.85);
-    }
+    .dot.active { background: rgba(255,255,255,0.85); }
 
     /* Toast */
     .toast {
@@ -309,11 +315,25 @@
       border-radius: 14px;
       opacity: 0;
       pointer-events: none;
-      z-index: 70;
+      z-index: 90;
       transition: opacity 220ms ease;
       max-width: 92vw;
     }
     .toast.show { opacity: 1; }
+
+    /* Easter egg hotspots (invisible) */
+    .hotspot-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hotspot {
+      position: absolute;
+      pointer-events: auto;
+      background: rgba(255,255,255,0.0);
+      border-radius: 16px;
+    }
   </style>
 </head>
 
@@ -323,7 +343,28 @@
   </video>
   <div class="overlay"></div>
 
-  <div class="easter-area" onclick="showEasterEgg('fireplace')"></div>
+  <!-- Easter egg hotspots overlay (positions are approximate, adjust if your video differs) -->
+  <div class="hotspot-layer">
+    <!-- Stocking on left -->
+    <div class="hotspot" style="left: 8%; top: 20%; width: 14%; height: 22%;"
+         onclick="openModal({title:'A little secret ❤️', text:`I love to hang out with you, let's hang out again soon.`, primaryText:'Okay', tip:`Tip: tap outside this box to close.`})">
+    </div>
+
+    <!-- Gifts bottom left -->
+    <div class="hotspot" style="left: 8%; top: 66%; width: 20%; height: 20%;"
+         onclick="openModal({title:'A little secret ❤️', text:`Ho Ho Ho... I've got the Ho-ts for you.`, primaryText:'Okay', tip:`Tip: tap outside this box to close.`})">
+    </div>
+
+    <!-- Window snow bottom right -->
+    <div class="hotspot" style="left: 68%; top: 54%; width: 24%; height: 26%;"
+         onclick="openModal({title:'A little secret ❤️', text:`But baby, it's cold outside...`, primaryText:'Okay', tip:`Tip: tap outside this box to close.`})">
+    </div>
+
+    <!-- Brown chair right -->
+    <div class="hotspot" style="left: 72%; top: 36%; width: 22%; height: 22%;"
+         onclick="openModal({title:'A little secret ❤️', text:`Come a little closer Dear`, primaryText:'Okay', tip:`Tip: tap outside this box to close.`})">
+    </div>
+  </div>
 
   <audio id="bgm" preload="auto" loop>
     <source src="song.mp3" type="audio/mpeg">
@@ -407,7 +448,6 @@
 
           <div class="dots" id="dots"></div>
           <p class="gallery-caption" id="galleryCaption"></p>
-          <p class="small">Tip: photos should be named p01.jpg through p15.jpg in this same repo.</p>
         </div>
 
         <h2>A note for you</h2>
@@ -439,38 +479,32 @@
     const modalText = document.getElementById("modalText");
     const modalTip = document.getElementById("modalTip");
     const modalPrimaryBtn = document.getElementById("modalPrimaryBtn");
-    const modalSecondaryBtn = document.getElementById("modalSecondaryBtn");
     const toast = document.getElementById("toast");
 
     let musicOn = false;
-    let musicPrimed = false;
+    let primed = false;
 
-    // ---- Music autoplay reality: start on first interaction anywhere ----
-    function primeMusicOnFirstInteraction() {
-      if (musicPrimed) return;
-      musicPrimed = true;
+    // Start music on first user interaction anywhere (browser requirement)
+    function primeMusic() {
+      if (primed) return;
+      primed = true;
 
-      const tryStart = () => {
-        if (!musicOn) {
-          toggleMusic(true); // silent toggle with no "blocked" toast spam
-        }
-        window.removeEventListener("click", tryStart);
-        window.removeEventListener("touchstart", tryStart);
-        window.removeEventListener("keydown", tryStart);
+      const attempt = () => {
+        if (!musicOn) toggleMusic(true);
+        window.removeEventListener("click", attempt);
+        window.removeEventListener("touchstart", attempt);
+        window.removeEventListener("keydown", attempt);
       };
 
-      window.addEventListener("click", tryStart, { once: true });
-      window.addEventListener("touchstart", tryStart, { once: true });
-      window.addEventListener("keydown", tryStart, { once: true });
+      window.addEventListener("click", attempt, { once: true });
+      window.addEventListener("touchstart", attempt, { once: true });
+      window.addEventListener("keydown", attempt, { once: true });
 
-      // Helpful hint so you know it’s working
       showToast("Tap anywhere to start music.");
     }
+    primeMusic();
 
-    // Call once on page load
-    primeMusicOnFirstInteraction();
-
-    // ---- Option 3: Cozy checklist ----
+    // Checklist (fixed)
     const checklistItems = [
       { id: "blankets", text: "Blankets ready" },
       { id: "cozy", text: "Cozy clothes or pajamas on" },
@@ -505,18 +539,19 @@
       checklistItems.forEach(item => {
         const wrapper = document.createElement("div");
         wrapper.className = "check-item" + (state[item.id] ? " done" : "");
-        wrapper.onclick = () => toggleChecklist(item.id);
 
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = !!state[item.id];
-        cb.onclick = (e) => e.stopPropagation();
+        const box = document.createElement("div");
+        box.className = "box";
+        box.setAttribute("role", "checkbox");
+        box.setAttribute("aria-checked", state[item.id] ? "true" : "false");
+        box.onclick = (e) => { e.stopPropagation(); toggleChecklist(item.id); };
 
         const label = document.createElement("div");
         label.className = "label";
         label.textContent = item.text;
+        label.onclick = (e) => { e.stopPropagation(); toggleChecklist(item.id); };
 
-        wrapper.appendChild(cb);
+        wrapper.appendChild(box);
         wrapper.appendChild(label);
         el.appendChild(wrapper);
       });
@@ -535,8 +570,7 @@
       showToast("Checklist reset.");
     }
 
-    // ---- Option 5: Photo gallery (15 pics, some portrait) ----
-    // Portrait: 1,2,4,5,10,11,15
+    // Photo gallery
     const photos = [
       { src: "p01.jpg", caption: "One of my favorite moments with you.", portrait: true },
       { src: "p02.jpg", caption: "Us, doing life together.", portrait: true },
@@ -575,11 +609,8 @@
       img.src = photos[photoIndex].src;
       caption.textContent = photos[photoIndex].caption || "";
 
-      if (photos[photoIndex].portrait) {
-        img.classList.add("portrait");
-      } else {
-        img.classList.remove("portrait");
-      }
+      if (photos[photoIndex].portrait) img.classList.add("portrait");
+      else img.classList.remove("portrait");
 
       buildDots();
     }
@@ -599,34 +630,15 @@
       renderPhoto();
     }
 
-    // ---- Option 4: Hidden love notes ----
-    const easterNotes = [
-      "Mi amor, you are my favorite part of every day.",
-      "If you found this, you get an extra kiss. Come claim it.",
-      "Thank you for being you. I love you, Mari.",
-      "You make our home feel like home.",
-      "I would pick you in every lifetime."
-    ];
-
+    // Easter eggs
     function showEasterEgg(source) {
       let msg = "";
-      if (source === "title") {
-        msg = "Mi amor, you are my favorite. Always.";
-      } else if (source === "fireplace") {
-        msg = "Warm fire, warm heart. That is you.";
-      } else {
-        msg = easterNotes[Math.floor(Math.random() * easterNotes.length)];
-      }
+      if (source === "title") msg = "Mi amor, you are my favorite. Always.";
+      else msg = "A little secret ❤️";
 
-      openModal({
-        title: "A little secret ❤️",
-        text: msg,
-        primaryText: "Okay",
-        tip: "Tip: tap outside this box to close."
-      });
+      openModal({ title: "A little secret ❤️", text: msg, primaryText: "Okay", tip: "Tip: tap outside this box to close." });
     }
 
-    // Tiny surprise: exact message + button label + tip
     function tinySurprise() {
       openModal({
         title: "Secret unlocked ❤️",
@@ -636,7 +648,6 @@
       });
     }
 
-    // ---- Option 6: Hug ----
     function hug() {
       openModal({
         title: "Come here 🤍",
@@ -646,7 +657,6 @@
       });
     }
 
-    // ---- Unlock + Start ----
     function unlock() {
       const val = (document.getElementById("code").value || "").trim().toUpperCase();
       const status = document.getElementById("status");
@@ -655,8 +665,6 @@
         document.getElementById("content").classList.remove("hidden");
         document.querySelector(".lockbox").style.display = "none";
         status.innerHTML = '<span class="ok">Unlocked. Movie night awaits, mi amor.</span>';
-
-        // Try to start music now that the user definitely interacted
         if (!musicOn) toggleMusic(true);
       } else {
         status.innerHTML = '<span class="err">Not quite. Try again.</span>';
@@ -674,12 +682,10 @@
         primaryText: "Okay",
         tip: "Tip: tap outside this box to close."
       });
-
-      // Start music on Start click
       if (!musicOn) toggleMusic(true);
     }
 
-    // ---- Modal helpers ----
+    // Modal helpers
     function openModal({ title, text, primaryText, tip }) {
       modalTitle.textContent = title;
       modalText.textContent = text;
@@ -694,8 +700,7 @@
       modal.setAttribute("aria-hidden", "true");
     }
 
-    // ---- Music toggle ----
-    // silent = true means "don’t show the blocked toast if the browser stops it"
+    // Music toggle
     function toggleMusic(silent = false) {
       if (!musicOn) {
         bgm.volume = 0.45;
@@ -731,7 +736,6 @@
       if (e.key === "ArrowLeft") prevPhoto();
     });
 
-    // Initialize
     renderChecklist();
     renderPhoto();
   </script>
