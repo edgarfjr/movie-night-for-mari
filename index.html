@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Christmas Movie Night for Mari</title>
+  <title>Movie Night for Mi Amor</title>
 
   <style>
     body {
@@ -63,9 +63,7 @@
     }
 
     @media (min-width: 720px) {
-      .grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      .grid { grid-template-columns: 1fr 1fr; }
     }
 
     .pill {
@@ -83,6 +81,7 @@
       gap: 12px;
       flex-wrap: wrap;
       margin-top: 14px;
+      align-items: center;
     }
 
     button {
@@ -120,42 +119,117 @@
       margin-top: 10px;
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
 
-    .ok {
-      color: #9bffb2;
-      font-weight: 650;
-    }
-
-    .err {
-      color: #ff9a9a;
-      font-weight: 650;
-    }
+    .ok { color: #9bffb2; font-weight: 650; }
+    .err { color: #ff9a9a; font-weight: 650; }
 
     hr {
       border: 0;
       border-top: 1px solid rgba(255,255,255,0.25);
       margin: 20px 0;
     }
+
+    /* Top right controls */
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    /* Fade-in message modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 50;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      animation: fadeIn 260ms ease forwards;
+    }
+
+    .modal-card {
+      position: relative;
+      max-width: 620px;
+      width: 100%;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 20px;
+      padding: 18px 18px 16px;
+      transform: translateY(10px);
+      opacity: 0;
+      animation: popIn 320ms ease forwards;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      margin: 0 0 8px;
+    }
+
+    .modal-text {
+      margin: 0 0 12px;
+      opacity: 0.92;
+      line-height: 1.35;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes popIn {
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 
 <body>
-
   <video class="bgvid" autoplay muted loop playsinline>
     <source src="fireplace.mp4" type="video/mp4">
   </video>
   <div class="overlay"></div>
 
+  <!-- This audio file must exist in your repo root -->
+  <audio id="bgm" preload="auto" loop>
+    <source src="song.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Fade-in message modal -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" onclick="closeModal()"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Movie night message">
+      <p class="modal-title">Movie night begins ❤️</p>
+      <p class="modal-text" id="modalText">
+        Mi amor, get comfy. I’ve got everything handled. All you have to do is relax and enjoy.
+      </p>
+      <div class="row">
+        <button class="btn" onclick="closeModal()">Okay</button>
+        <button class="btn2" onclick="toggleMusic()">Music On/Off</button>
+      </div>
+      <p class="small" style="margin:10px 0 0;">Tip: tap outside this box to close.</p>
+    </div>
+  </div>
+
   <div class="wrap">
+    <div class="topbar">
+      <button id="musicBtn" class="btn2" onclick="toggleMusic()">Music: Off</button>
+    </div>
+
     <div class="card">
-      <h1>Merry Christmas, my love (Mari)</h1>
-      <p class="sub">Cozy night by the fire, just you and me. Listos para relax?</p>
+      <h1>Movie Night for mi amor</h1>
+      <p class="sub">Cozy night by the fire, just you and me. Tonight is for you.</p>
 
       <div class="lockbox">
-        <p>Enter the secret code from your gift box, mi amor:</p>
+        <p>Enter the secret code from your movie ticket, mi amor:</p>
         <input id="code" placeholder="Type the code here" autocomplete="off">
         <div class="row">
           <button class="btn" onclick="unlock()">Unlock</button>
@@ -171,29 +245,29 @@
         <div class="grid">
           <div class="card">
             <div class="pill">Step 1</div>
-            <p>You pick the movie, my love. No debating.</p>
+            <p>You pick the movie, whatever you desire, my love.</p>
           </div>
           <div class="card">
             <div class="pill">Step 2</div>
-            <p>Blankets, cozy clothes, fireplace vibes. Ponte comfy.</p>
+            <p>Blankets, cozy clothes or pajamas, fireplace vibes, dim the lights.</p>
           </div>
           <div class="card">
             <div class="pill">Step 3</div>
-            <p>Popcorn, snacks, and refills handled by me. Tu solo relax.</p>
+            <p>Popcorn, snacks, and refills handled by me. I promise to pause the movie.</p>
           </div>
           <div class="card">
             <div class="pill">Step 4</div>
-            <p>Wine in the nice glasses. Cheers to us, siempre.</p>
+            <p>Wine, cheese, and snacks. Cheers to us, siempre.</p>
           </div>
         </div>
 
         <h2>A note for you</h2>
         <div class="card">
           <p>
-            Mari, I love you. Thank you for everything you do and for making our home feel warm,
+            Mi amor, I love you. Thank you for everything you do and for making our home feel warm,
             safe, and full of love. Tonight is simple, relax, laugh, and let me spoil you a little.
           </p>
-          <p style="margin-top:12px; opacity:0.9;">Love you always, Edgar</p>
+          <p style="margin-top:12px; opacity:0.9;">Love you always, Hubby</p>
         </div>
 
         <div class="row">
@@ -201,13 +275,19 @@
           <button class="btn2" onclick="window.print()">Print this page</button>
         </div>
 
-        <p class="small">Feliz Navidad, mi amor ❤️</p>
+        <p class="small">Feliz Navidad ❤️</p>
       </div>
     </div>
   </div>
 
   <script>
-    const SECRET = "MERRYCHRISTMAS";
+    const SECRET = "NAVIDADCONTLCAMOR";
+
+    const bgm = document.getElementById("bgm");
+    const musicBtn = document.getElementById("musicBtn");
+    const modal = document.getElementById("modal");
+
+    let musicOn = false;
 
     function unlock() {
       const val = (document.getElementById("code").value || "").trim().toUpperCase();
@@ -216,20 +296,61 @@
       if (val === SECRET) {
         document.getElementById("content").classList.remove("hidden");
         document.querySelector(".lockbox").style.display = "none";
-        status.innerHTML = '<span class="ok">Unlocked. Welcome to movie night, mi amor.</span>';
+        status.innerHTML = '<span class="ok">Unlocked. Movie night awaits, mi amor.</span>';
       } else {
         status.innerHTML = '<span class="err">Not quite. Try again.</span>';
       }
     }
 
     function hint() {
-      document.getElementById("status").textContent =
-        "Hint: two words, all caps, no spaces. A classic holiday phrase.";
+      document.getElementById("status").textContent = "Hint: look at the movie ticket.";
     }
 
     function startNight() {
-      alert("Movie night begins, my love. Te amo.");
+      // Show the soft fade-in message instead of an alert
+      openModal();
+
+      // Optional: start music automatically when she clicks Start (allowed by browsers)
+      // Comment these two lines out if you want music to be manual only.
+      if (!musicOn) {
+        toggleMusic();
+      }
     }
+
+    function openModal() {
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    function toggleMusic() {
+      // Browsers require user interaction before audio can play.
+      // This function is always triggered by a click, so it will work.
+      if (!musicOn) {
+        bgm.volume = 0.45; // feel free to adjust 0.0 to 1.0
+        bgm.play().then(() => {
+          musicOn = true;
+          musicBtn.textContent = "Music: On";
+        }).catch(() => {
+          // If the file is missing or blocked, keep it graceful.
+          musicOn = false;
+          musicBtn.textContent = "Music: Off";
+        });
+      } else {
+        bgm.pause();
+        musicOn = false;
+        musicBtn.textContent = "Music: Off";
+      }
+    }
+
+    // Nice touch: allow ESC to close modal
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
   </script>
 
 </body>
