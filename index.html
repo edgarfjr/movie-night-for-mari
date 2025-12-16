@@ -28,10 +28,23 @@
       z-index: -1;
     }
 
+    /* Clickable area for an easter egg, subtle and invisible */
+    .easter-area {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 28vh;
+      z-index: 0;
+      cursor: default;
+    }
+
     .wrap {
-      max-width: 860px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 32px 18px 64px;
+      position: relative;
+      z-index: 1;
     }
 
     .card {
@@ -45,6 +58,8 @@
     h1 {
       font-size: 36px;
       margin: 0 0 10px;
+      cursor: pointer;
+      user-select: none;
     }
 
     h2 {
@@ -134,8 +149,11 @@
       display: flex;
       justify-content: flex-end;
       margin-bottom: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
+    /* Modal (used for the soft message, hug, and easter eggs) */
     .modal {
       position: fixed;
       inset: 0;
@@ -143,7 +161,7 @@
       align-items: center;
       justify-content: center;
       padding: 18px;
-      z-index: 50;
+      z-index: 60;
     }
 
     .modal.show { display: flex; }
@@ -159,7 +177,7 @@
 
     .modal-card {
       position: relative;
-      max-width: 620px;
+      max-width: 720px;
       width: 100%;
       background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.22);
@@ -178,11 +196,114 @@
     .modal-text {
       margin: 0 0 12px;
       opacity: 0.92;
-      line-height: 1.35;
+      line-height: 1.45;
     }
 
     @keyframes fadeIn { to { opacity: 1; } }
     @keyframes popIn { to { transform: translateY(0); opacity: 1; } }
+
+    /* Cozy checklist */
+    .checklist {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (min-width: 720px) {
+      .checklist { grid-template-columns: 1fr 1fr; }
+    }
+    .check-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      cursor: pointer;
+      user-select: none;
+    }
+    .check-item input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+    }
+    .check-item .label {
+      line-height: 1.3;
+      opacity: 0.95;
+    }
+    .check-item.done .label {
+      opacity: 0.75;
+      text-decoration: line-through;
+    }
+
+    /* Photo gallery */
+    .gallery {
+      margin-top: 10px;
+    }
+    .gallery-frame {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+    .gallery-img {
+      width: 100%;
+      height: 420px;
+      object-fit: cover;
+      display: block;
+    }
+    @media (max-width: 720px) {
+      .gallery-img { height: 320px; }
+    }
+    .gallery-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .gallery-caption {
+      margin-top: 10px;
+      opacity: 0.9;
+    }
+    .dots {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.12);
+      cursor: pointer;
+    }
+    .dot.active {
+      background: rgba(255,255,255,0.85);
+    }
+
+    /* Small toast message */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 14px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 70;
+      transition: opacity 220ms ease;
+      max-width: 92vw;
+    }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 
@@ -192,17 +313,19 @@
   </video>
   <div class="overlay"></div>
 
+  <!-- Invisible easter egg click zone over the lower portion of the fireplace -->
+  <div class="easter-area" onclick="showEasterEgg('fireplace')"></div>
+
   <audio id="bgm" preload="auto" loop>
     <source src="song.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- Reusable modal -->
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" onclick="closeModal()"></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Movie night message">
-      <p class="modal-title">Movie night begins ❤️</p>
-      <p class="modal-text" id="modalText">
-        Mi amor, get comfy. I’ve got everything handled. All you have to do is relax and enjoy.
-      </p>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Message">
+      <p class="modal-title" id="modalTitle">Message</p>
+      <p class="modal-text" id="modalText">...</p>
       <div class="row">
         <button class="btn" onclick="closeModal()">Okay</button>
         <button class="btn2" onclick="toggleMusic()">Music On/Off</button>
@@ -211,13 +334,16 @@
     </div>
   </div>
 
+  <div id="toast" class="toast"></div>
+
   <div class="wrap">
     <div class="topbar">
       <button id="musicBtn" class="btn2" onclick="toggleMusic()">Music: Off</button>
+      <button class="btn2" onclick="hug()">I need a hug</button>
     </div>
 
     <div class="card">
-      <h1>Movie Night for mi amor</h1>
+      <h1 onclick="showEasterEgg('title')">Movie Night for mi amor</h1>
       <p class="sub">Cozy night by the fire, just you and me. Tonight is for you.</p>
 
       <div class="lockbox">
@@ -253,6 +379,29 @@
           </div>
         </div>
 
+        <h2>Cozy checklist</h2>
+        <div class="checklist" id="checklist"></div>
+        <div class="row">
+          <button class="btn2" onclick="resetChecklist()">Reset checklist</button>
+          <button class="btn2" onclick="showEasterEgg('random')">Tiny surprise</button>
+        </div>
+
+        <h2>Us</h2>
+        <div class="gallery">
+          <div class="gallery-frame">
+            <img id="galleryImg" class="gallery-img" src="p01.jpg" alt="Photo memory">
+          </div>
+
+          <div class="gallery-controls">
+            <button class="btn2" onclick="prevPhoto()">Previous</button>
+            <button class="btn2" onclick="nextPhoto()">Next</button>
+          </div>
+
+          <div class="dots" id="dots"></div>
+          <p class="gallery-caption" id="galleryCaption"></p>
+          <p class="small">Tip: add photos named p01.jpg through p15.jpg in this same repo.</p>
+        </div>
+
         <h2>A note for you</h2>
         <div class="card">
           <p>
@@ -278,9 +427,166 @@
     const bgm = document.getElementById("bgm");
     const musicBtn = document.getElementById("musicBtn");
     const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalText = document.getElementById("modalText");
+    const toast = document.getElementById("toast");
 
     let musicOn = false;
 
+    // Option 3: Cozy checklist
+    const checklistItems = [
+      { id: "blankets", text: "Blankets ready" },
+      { id: "cozy", text: "Cozy clothes or pajamas on" },
+      { id: "lights", text: "Lights dimmed" },
+      { id: "snacks", text: "Snacks set out" },
+      { id: "popcorn", text: "Popcorn ready" },
+      { id: "wine", text: "Wine poured, cheese ready" },
+      { id: "phones", text: "Phones on silent" },
+      { id: "pause", text: "Promise to pause the movie for refills" }
+    ];
+
+    function loadChecklistState() {
+      try {
+        const saved = localStorage.getItem("movieNightChecklist");
+        return saved ? JSON.parse(saved) : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveChecklistState(state) {
+      try {
+        localStorage.setItem("movieNightChecklist", JSON.stringify(state));
+      } catch {}
+    }
+
+    function renderChecklist() {
+      const state = loadChecklistState();
+      const el = document.getElementById("checklist");
+      el.innerHTML = "";
+
+      checklistItems.forEach(item => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "check-item" + (state[item.id] ? " done" : "");
+        wrapper.onclick = () => toggleChecklist(item.id);
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!state[item.id];
+        cb.onclick = (e) => e.stopPropagation();
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.textContent = item.text;
+
+        wrapper.appendChild(cb);
+        wrapper.appendChild(label);
+        el.appendChild(wrapper);
+      });
+    }
+
+    function toggleChecklist(id) {
+      const state = loadChecklistState();
+      state[id] = !state[id];
+      saveChecklistState(state);
+      renderChecklist();
+    }
+
+    function resetChecklist() {
+      saveChecklistState({});
+      renderChecklist();
+      showToast("Checklist reset.");
+    }
+
+    // Option 5: Photo gallery (15 pictures)
+    const photos = [
+      { src: "p01.jpg", caption: "One of my favorite moments with you." },
+      { src: "p02.jpg", caption: "Us, doing life together." },
+      { src: "p03.jpg", caption: "My love." },
+      { src: "p04.jpg", caption: "Always my favorite view." },
+      { src: "p05.jpg", caption: "This one makes me smile." },
+      { src: "p06.jpg", caption: "You and me." },
+      { src: "p07.jpg", caption: "Mi amor." },
+      { src: "p08.jpg", caption: "My person." },
+      { src: "p09.jpg", caption: "Forever vibes." },
+      { src: "p10.jpg", caption: "I love our story." },
+      { src: "p11.jpg", caption: "Best memories are with you." },
+      { src: "p12.jpg", caption: "Still choosing you." },
+      { src: "p13.jpg", caption: "My safe place." },
+      { src: "p14.jpg", caption: "You make everything better." },
+      { src: "p15.jpg", caption: "Cheers to us, siempre." }
+    ];
+
+    let photoIndex = 0;
+
+    function buildDots() {
+      const dots = document.getElementById("dots");
+      dots.innerHTML = "";
+      photos.forEach((_, i) => {
+        const d = document.createElement("div");
+        d.className = "dot" + (i === photoIndex ? " active" : "");
+        d.onclick = () => goToPhoto(i);
+        dots.appendChild(d);
+      });
+    }
+
+    function renderPhoto() {
+      const img = document.getElementById("galleryImg");
+      const caption = document.getElementById("galleryCaption");
+      img.src = photos[photoIndex].src;
+      caption.textContent = photos[photoIndex].caption || "";
+      buildDots();
+    }
+
+    function nextPhoto() {
+      photoIndex = (photoIndex + 1) % photos.length;
+      renderPhoto();
+    }
+
+    function prevPhoto() {
+      photoIndex = (photoIndex - 1 + photos.length) % photos.length;
+      renderPhoto();
+    }
+
+    function goToPhoto(i) {
+      photoIndex = i;
+      renderPhoto();
+    }
+
+    // Option 4: Hidden love notes (Easter eggs)
+    const easterNotes = [
+      "Mi amor, you are my favorite part of every day.",
+      "If you found this, you get an extra kiss. Come claim it.",
+      "Thank you for being you. I love you, Mari.",
+      "You make our home feel like home.",
+      "I would pick you in every lifetime."
+    ];
+
+    function showEasterEgg(source) {
+      let msg = "";
+      if (source === "title") {
+        msg = "Mi amor, you are my favorite. Always.";
+      } else if (source === "fireplace") {
+        msg = "Warm fire, warm heart. That is you.";
+      } else {
+        msg = easterNotes[Math.floor(Math.random() * easterNotes.length)];
+      }
+
+      openModal(
+        "A little secret ❤️",
+        msg
+      );
+    }
+
+    // Option 6: Hug button
+    function hug() {
+      openModal(
+        "Come here 🤍",
+        "Big hug. No talking needed. Just you and me. I love you, mi amor."
+      );
+    }
+
+    // Existing flow
     function unlock() {
       const val = (document.getElementById("code").value || "").trim().toUpperCase();
       const status = document.getElementById("status");
@@ -299,15 +605,18 @@
     }
 
     function startNight() {
-      openModal();
+      openModal(
+        "Movie night begins ❤️",
+        "Mi amor, get comfy. I’ve got everything handled. All you have to do is relax and enjoy."
+      );
 
-      // Always toggle music ON when she clicks Start Movie Night
-      if (!musicOn) {
-        toggleMusic();
-      }
+      // Turn music on automatically when she clicks Start Movie Night
+      if (!musicOn) toggleMusic();
     }
 
-    function openModal() {
+    function openModal(title, text) {
+      modalTitle.textContent = title;
+      modalText.textContent = text;
       modal.classList.add("show");
       modal.setAttribute("aria-hidden", "false");
     }
@@ -323,20 +632,38 @@
         bgm.play().then(() => {
           musicOn = true;
           musicBtn.textContent = "Music: On";
+          showToast("Music on.");
         }).catch(() => {
           musicOn = false;
           musicBtn.textContent = "Music: Off";
+          showToast("Music file not found or blocked.");
         });
       } else {
         bgm.pause();
         musicOn = false;
         musicBtn.textContent = "Music: Off";
+        showToast("Music off.");
       }
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.clearTimeout(window.__toastTimer);
+      window.__toastTimer = window.setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1700);
     }
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeModal();
+      if (e.key === "ArrowRight") nextPhoto();
+      if (e.key === "ArrowLeft") prevPhoto();
     });
+
+    // Initialize interactive parts
+    renderChecklist();
+    renderPhoto();
   </script>
 
 </body>
