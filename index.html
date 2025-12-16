@@ -28,7 +28,7 @@
       z-index: -1;
     }
 
-    /* Clickable area for an easter egg, subtle and invisible */
+    /* Invisible easter egg click zone */
     .easter-area {
       position: fixed;
       left: 0;
@@ -62,9 +62,7 @@
       user-select: none;
     }
 
-    h2 {
-      margin: 22px 0 10px;
-    }
+    h2 { margin: 22px 0 10px; }
 
     .sub {
       opacity: 0.9;
@@ -153,7 +151,7 @@
       flex-wrap: wrap;
     }
 
-    /* Modal (used for the soft message, hug, and easter eggs) */
+    /* Modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -238,9 +236,8 @@
     }
 
     /* Photo gallery */
-    .gallery {
-      margin-top: 10px;
-    }
+    .gallery { margin-top: 10px; }
+
     .gallery-frame {
       position: relative;
       border-radius: 18px;
@@ -248,15 +245,24 @@
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.14);
     }
+
     .gallery-img {
       width: 100%;
-      height: 420px;
+      height: 440px;
       object-fit: cover;
       display: block;
+      background: rgba(0,0,0,0.35);
     }
+
+    /* Portrait photos: show full image (no cropping) */
+    .gallery-img.portrait {
+      object-fit: contain;
+    }
+
     @media (max-width: 720px) {
-      .gallery-img { height: 320px; }
+      .gallery-img { height: 340px; }
     }
+
     .gallery-controls {
       display: flex;
       justify-content: space-between;
@@ -264,16 +270,19 @@
       margin-top: 10px;
       flex-wrap: wrap;
     }
+
     .gallery-caption {
       margin-top: 10px;
       opacity: 0.9;
     }
+
     .dots {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
       margin-top: 10px;
     }
+
     .dot {
       width: 10px;
       height: 10px;
@@ -282,11 +291,12 @@
       background: rgba(255,255,255,0.12);
       cursor: pointer;
     }
+
     .dot.active {
       background: rgba(255,255,255,0.85);
     }
 
-    /* Small toast message */
+    /* Toast */
     .toast {
       position: fixed;
       left: 50%;
@@ -313,24 +323,22 @@
   </video>
   <div class="overlay"></div>
 
-  <!-- Invisible easter egg click zone over the lower portion of the fireplace -->
   <div class="easter-area" onclick="showEasterEgg('fireplace')"></div>
 
   <audio id="bgm" preload="auto" loop>
     <source src="song.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Reusable modal -->
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" onclick="closeModal()"></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-label="Message">
       <p class="modal-title" id="modalTitle">Message</p>
       <p class="modal-text" id="modalText">...</p>
       <div class="row">
-        <button class="btn" onclick="closeModal()">Okay</button>
-        <button class="btn2" onclick="toggleMusic()">Music On/Off</button>
+        <button class="btn" id="modalPrimaryBtn" onclick="closeModal()">Okay</button>
+        <button class="btn2" id="modalSecondaryBtn" onclick="toggleMusic()">Music On/Off</button>
       </div>
-      <p class="small" style="margin:10px 0 0;">Tip: tap outside this box to close.</p>
+      <p class="small" id="modalTip" style="margin:10px 0 0;">Tip: tap outside this box to close.</p>
     </div>
   </div>
 
@@ -383,10 +391,10 @@
         <div class="checklist" id="checklist"></div>
         <div class="row">
           <button class="btn2" onclick="resetChecklist()">Reset checklist</button>
-          <button class="btn2" onclick="showEasterEgg('random')">Tiny surprise</button>
+          <button class="btn2" onclick="tinySurprise()">Tiny surprise</button>
         </div>
 
-        <h2>Us</h2>
+        <h2>A year of 'Us' 2025 memories</h2>
         <div class="gallery">
           <div class="gallery-frame">
             <img id="galleryImg" class="gallery-img" src="p01.jpg" alt="Photo memory">
@@ -399,7 +407,7 @@
 
           <div class="dots" id="dots"></div>
           <p class="gallery-caption" id="galleryCaption"></p>
-          <p class="small">Tip: add photos named p01.jpg through p15.jpg in this same repo.</p>
+          <p class="small">Tip: photos should be named p01.jpg through p15.jpg in this same repo.</p>
         </div>
 
         <h2>A note for you</h2>
@@ -429,20 +437,49 @@
     const modal = document.getElementById("modal");
     const modalTitle = document.getElementById("modalTitle");
     const modalText = document.getElementById("modalText");
+    const modalTip = document.getElementById("modalTip");
+    const modalPrimaryBtn = document.getElementById("modalPrimaryBtn");
+    const modalSecondaryBtn = document.getElementById("modalSecondaryBtn");
     const toast = document.getElementById("toast");
 
     let musicOn = false;
+    let musicPrimed = false;
 
-    // Option 3: Cozy checklist
+    // ---- Music autoplay reality: start on first interaction anywhere ----
+    function primeMusicOnFirstInteraction() {
+      if (musicPrimed) return;
+      musicPrimed = true;
+
+      const tryStart = () => {
+        if (!musicOn) {
+          toggleMusic(true); // silent toggle with no "blocked" toast spam
+        }
+        window.removeEventListener("click", tryStart);
+        window.removeEventListener("touchstart", tryStart);
+        window.removeEventListener("keydown", tryStart);
+      };
+
+      window.addEventListener("click", tryStart, { once: true });
+      window.addEventListener("touchstart", tryStart, { once: true });
+      window.addEventListener("keydown", tryStart, { once: true });
+
+      // Helpful hint so you know it’s working
+      showToast("Tap anywhere to start music.");
+    }
+
+    // Call once on page load
+    primeMusicOnFirstInteraction();
+
+    // ---- Option 3: Cozy checklist ----
     const checklistItems = [
       { id: "blankets", text: "Blankets ready" },
       { id: "cozy", text: "Cozy clothes or pajamas on" },
       { id: "lights", text: "Lights dimmed" },
+      { id: "candles", text: "Candles lit" },
       { id: "snacks", text: "Snacks set out" },
       { id: "popcorn", text: "Popcorn ready" },
       { id: "wine", text: "Wine poured, cheese ready" },
-      { id: "phones", text: "Phones on silent" },
-      { id: "pause", text: "Promise to pause the movie for refills" }
+      { id: "phones", text: "Phones on silent" }
     ];
 
     function loadChecklistState() {
@@ -498,23 +535,24 @@
       showToast("Checklist reset.");
     }
 
-    // Option 5: Photo gallery (15 pictures)
+    // ---- Option 5: Photo gallery (15 pics, some portrait) ----
+    // Portrait: 1,2,4,5,10,11,15
     const photos = [
-      { src: "p01.jpg", caption: "One of my favorite moments with you." },
-      { src: "p02.jpg", caption: "Us, doing life together." },
-      { src: "p03.jpg", caption: "My love." },
-      { src: "p04.jpg", caption: "Always my favorite view." },
-      { src: "p05.jpg", caption: "This one makes me smile." },
-      { src: "p06.jpg", caption: "You and me." },
-      { src: "p07.jpg", caption: "Mi amor." },
-      { src: "p08.jpg", caption: "My person." },
-      { src: "p09.jpg", caption: "Forever vibes." },
-      { src: "p10.jpg", caption: "I love our story." },
-      { src: "p11.jpg", caption: "Best memories are with you." },
-      { src: "p12.jpg", caption: "Still choosing you." },
-      { src: "p13.jpg", caption: "My safe place." },
-      { src: "p14.jpg", caption: "You make everything better." },
-      { src: "p15.jpg", caption: "Cheers to us, siempre." }
+      { src: "p01.jpg", caption: "One of my favorite moments with you.", portrait: true },
+      { src: "p02.jpg", caption: "Us, doing life together.", portrait: true },
+      { src: "p03.jpg", caption: "My love.", portrait: false },
+      { src: "p04.jpg", caption: "Always my favorite view.", portrait: true },
+      { src: "p05.jpg", caption: "This one makes me smile.", portrait: true },
+      { src: "p06.jpg", caption: "You and me.", portrait: false },
+      { src: "p07.jpg", caption: "Mi amor.", portrait: false },
+      { src: "p08.jpg", caption: "My person.", portrait: false },
+      { src: "p09.jpg", caption: "Forever vibes.", portrait: false },
+      { src: "p10.jpg", caption: "I love our story.", portrait: true },
+      { src: "p11.jpg", caption: "Best memories are with you.", portrait: true },
+      { src: "p12.jpg", caption: "Still choosing you.", portrait: false },
+      { src: "p13.jpg", caption: "My safe place.", portrait: false },
+      { src: "p14.jpg", caption: "You make everything better.", portrait: false },
+      { src: "p15.jpg", caption: "Cheers to us, siempre.", portrait: true }
     ];
 
     let photoIndex = 0;
@@ -533,8 +571,16 @@
     function renderPhoto() {
       const img = document.getElementById("galleryImg");
       const caption = document.getElementById("galleryCaption");
+
       img.src = photos[photoIndex].src;
       caption.textContent = photos[photoIndex].caption || "";
+
+      if (photos[photoIndex].portrait) {
+        img.classList.add("portrait");
+      } else {
+        img.classList.remove("portrait");
+      }
+
       buildDots();
     }
 
@@ -553,7 +599,7 @@
       renderPhoto();
     }
 
-    // Option 4: Hidden love notes (Easter eggs)
+    // ---- Option 4: Hidden love notes ----
     const easterNotes = [
       "Mi amor, you are my favorite part of every day.",
       "If you found this, you get an extra kiss. Come claim it.",
@@ -572,21 +618,35 @@
         msg = easterNotes[Math.floor(Math.random() * easterNotes.length)];
       }
 
-      openModal(
-        "A little secret ❤️",
-        msg
-      );
+      openModal({
+        title: "A little secret ❤️",
+        text: msg,
+        primaryText: "Okay",
+        tip: "Tip: tap outside this box to close."
+      });
     }
 
-    // Option 6: Hug button
+    // Tiny surprise: exact message + button label + tip
+    function tinySurprise() {
+      openModal({
+        title: "Secret unlocked ❤️",
+        text: "Secret unlocked. I still choose you every day, and I always will. Which is really not a secret",
+        primaryText: "Click if you agree",
+        tip: "Tip: It's the red button!"
+      });
+    }
+
+    // ---- Option 6: Hug ----
     function hug() {
-      openModal(
-        "Come here 🤍",
-        "Big hug. No talking needed. Just you and me. I love you, mi amor."
-      );
+      openModal({
+        title: "Come here 🤍",
+        text: "Big hug. No talking needed. Just you and me. I love you, mi amor.",
+        primaryText: "Okay",
+        tip: "Tip: tap outside this box to close."
+      });
     }
 
-    // Existing flow
+    // ---- Unlock + Start ----
     function unlock() {
       const val = (document.getElementById("code").value || "").trim().toUpperCase();
       const status = document.getElementById("status");
@@ -595,6 +655,9 @@
         document.getElementById("content").classList.remove("hidden");
         document.querySelector(".lockbox").style.display = "none";
         status.innerHTML = '<span class="ok">Unlocked. Movie night awaits, mi amor.</span>';
+
+        // Try to start music now that the user definitely interacted
+        if (!musicOn) toggleMusic(true);
       } else {
         status.innerHTML = '<span class="err">Not quite. Try again.</span>';
       }
@@ -605,18 +668,23 @@
     }
 
     function startNight() {
-      openModal(
-        "Movie night begins ❤️",
-        "Mi amor, get comfy. I’ve got everything handled. All you have to do is relax and enjoy."
-      );
+      openModal({
+        title: "Movie night begins ❤️",
+        text: "Mi amor, get comfy. I’ve got everything handled. All you have to do is relax and enjoy.",
+        primaryText: "Okay",
+        tip: "Tip: tap outside this box to close."
+      });
 
-      // Turn music on automatically when she clicks Start Movie Night
-      if (!musicOn) toggleMusic();
+      // Start music on Start click
+      if (!musicOn) toggleMusic(true);
     }
 
-    function openModal(title, text) {
+    // ---- Modal helpers ----
+    function openModal({ title, text, primaryText, tip }) {
       modalTitle.textContent = title;
       modalText.textContent = text;
+      modalPrimaryBtn.textContent = primaryText || "Okay";
+      modalTip.textContent = tip || "Tip: tap outside this box to close.";
       modal.classList.add("show");
       modal.setAttribute("aria-hidden", "false");
     }
@@ -626,23 +694,25 @@
       modal.setAttribute("aria-hidden", "true");
     }
 
-    function toggleMusic() {
+    // ---- Music toggle ----
+    // silent = true means "don’t show the blocked toast if the browser stops it"
+    function toggleMusic(silent = false) {
       if (!musicOn) {
         bgm.volume = 0.45;
         bgm.play().then(() => {
           musicOn = true;
           musicBtn.textContent = "Music: On";
-          showToast("Music on.");
+          if (!silent) showToast("Music on.");
         }).catch(() => {
           musicOn = false;
           musicBtn.textContent = "Music: Off";
-          showToast("Music file not found or blocked.");
+          if (!silent) showToast("Music can’t start until you tap the page.");
         });
       } else {
         bgm.pause();
         musicOn = false;
         musicBtn.textContent = "Music: Off";
-        showToast("Music off.");
+        if (!silent) showToast("Music off.");
       }
     }
 
@@ -661,7 +731,7 @@
       if (e.key === "ArrowLeft") prevPhoto();
     });
 
-    // Initialize interactive parts
+    // Initialize
     renderChecklist();
     renderPhoto();
   </script>
